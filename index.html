@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIROC 2026 // Judge Scoring Panel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-deep: #02040a;
+            --cyber-cyan: #00f0ff;
+            --neon-green: #00ff66;
+            --neon-yellow: #ffea00;
+            --neon-red: #ff0055;
+            --panel-bg: rgba(4, 10, 24, 0.94);
+            --border-glow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(135deg, #02040a 0%, #0a1930 50%, #02040a 100%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 240, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 50%);
+            pointer-events: none; z-index: -1;
+        }
+
+        .container { max-width: 950px; margin: 0 auto; }
+
+        #loginMenu { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-panel {
+            width: 100%; max-width: 500px;
+            background: var(--panel-bg); border: 2px solid var(--cyber-cyan); padding: 40px;
+            box-shadow: var(--border-glow); backdrop-filter: blur(10px);
+            clip-path: polygon(0 20px, 20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px));
+        }
+        #loginMenu.hidden { display: none !important; }
+
+        .hud-tag { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 3px; color: var(--cyber-cyan); margin-bottom: 10px; text-align: center; text-transform: uppercase; }
+        .hud-title { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; color: #ffffff; margin-bottom: 20px; text-align: center; text-shadow: 0 0 15px rgba(0, 240, 255, 0.5); }
+
+        .category-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .category-btn {
+            padding: 15px; background: rgba(0, 240, 255, 0.05); border: 2px solid rgba(0, 240, 255, 0.3);
+            color: #e2e8f0; cursor: pointer; border-radius: 3px; font-size: 0.8rem; font-weight: 700;
+            font-family: 'Orbitron', sans-serif; text-transform: uppercase; transition: all 0.3s ease;
+        }
+        .category-btn:hover { background: var(--cyber-cyan); border-color: var(--cyber-cyan); color: #02040a; box-shadow: 0 0 15px var(--cyber-cyan); }
+
+        #scoringForm { display: none; }
+        #scoringForm.active { display: block; }
+
+        .form-header, .form-container {
+            background: var(--panel-bg); border: 2px solid var(--cyber-cyan); padding: 25px;
+            box-shadow: var(--border-glow); backdrop-filter: blur(10px); margin-bottom: 20px;
+        }
+        .hud-title-form { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; color: #fff; text-align: center; margin-bottom: 15px; }
+
+        .form-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); }
+        .section-title { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; color: var(--neon-green); text-transform: uppercase; margin-bottom: 15px; padding-left: 10px; border-left: 3px solid var(--neon-green); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--cyber-cyan); margin-bottom: 6px; text-transform: uppercase; font-weight: 700; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #e2e8f0; font-family: 'Share Tech Mono', monospace; border-radius: 3px;
+        }
+
+        /* MATRIX TABLE STYLING */
+        .matrix-table-wrapper { overflow-x: auto; border: 1px solid var(--cyber-cyan); border-radius: 4px; background: rgba(2, 6, 15, 0.8); }
+        .matrix-table { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Share Tech Mono', monospace; }
+        .matrix-table th, .matrix-table td { border: 1px solid rgba(0, 240, 255, 0.25); padding: 12px 10px; vertical-align: middle; }
+        .matrix-table th { background: rgba(0, 240, 255, 0.15); color: var(--cyber-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; }
+        .matrix-row-header { font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; text-align: left; padding-left: 15px !important; }
+
+        .row-red { background-color: rgba(255, 0, 85, 0.08); color: #ff85a1; }
+        .row-yellow { background-color: rgba(255, 234, 0, 0.08); color: #fffa80; }
+        .row-mystery { background-color: rgba(147, 51, 234, 0.08); color: #d8b4fe; }
+        .row-green { background-color: rgba(0, 255, 102, 0.08); color: #86efac; }
+        .row-blue { background-color: rgba(0, 102, 255, 0.08); color: #93c5fd; }
+        .row-purple { background-color: rgba(147, 51, 234, 0.12); color: #e9d5ff; }
+
+        .score-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            vertical-align: middle;
+            width: 70px;
+            min-width: 70px;
+            height: 52px;
+            padding: 0;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .score-box.active { background: var(--cyber-cyan); color: #02040a; border-color: var(--cyber-cyan); box-shadow: 0 0 10px var(--cyber-cyan); }
+        .matrix-disabled { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02) 8px, rgba(0, 0, 0, 0.3) 8px, rgba(0, 0, 0, 0.3) 16px); }
+
+        .matrix-total-row td { background: rgba(0, 240, 255, 0.2); font-family: 'Orbitron', sans-serif; font-weight: 900; color: var(--neon-yellow); font-size: 1.1rem; }
+
+        /* UPLOAD & BUTTONS */
+        .file-upload-wrapper { margin-bottom: 12px; }
+        .file-upload-input { display: none; }
+        .file-upload-label {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 15px; background: rgba(0, 240, 255, 0.05); border: 2px dashed rgba(0, 240, 255, 0.4);
+            border-radius: 3px; cursor: pointer; color: var(--cyber-cyan); font-size: 0.75rem; text-transform: uppercase;
+        }
+        .image-preview-container { margin-top: 10px; display: none; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 3px; background: rgba(0,0,0,0.3); }
+        .image-preview-container.show { display: block; }
+        .image-preview { width: 100%; max-height: 180px; object-fit: contain; }
+        .image-preview-info { display: flex; justify-content: space-between; padding: 6px 10px; font-size: 0.75rem; color: var(--cyber-cyan); background: rgba(0,240,255,0.1); }
+        .remove-image-btn { background: rgba(255, 0, 85, 0.2); border: 1px solid var(--neon-red); color: var(--neon-red); padding: 2px 6px; cursor: pointer; }
+
+        .total-score-display {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(147, 51, 234, 0.1));
+            border: 2px solid var(--neon-yellow); padding: 18px; text-align: center; border-radius: 5px; margin: 20px 0;
+        }
+        .total-score-value { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; font-weight: 900; color: var(--neon-yellow); }
+
+        .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .cyber-btn {
+            background: rgba(0, 240, 255, 0.05); border: 1px solid var(--cyber-cyan); color: #fff;
+            padding: 12px 24px; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 700;
+            cursor: pointer; text-transform: uppercase; border-radius: 3px; transition: all 0.3s ease;
+        }
+        .cyber-btn.submit { border-color: var(--neon-green); color: var(--neon-green); flex: 1; }
+        .cyber-btn.submit:hover { background: var(--neon-green); color: #02040a; }
+        .cyber-btn.reset { border-color: var(--neon-red); color: var(--neon-red); }
+        .cyber-btn.reset:hover { background: var(--neon-red); color: #02040a; }
+
+        .alert { padding: 12px; border-radius: 3px; margin-bottom: 15px; font-size: 0.8rem; display: none; border-left: 4px solid; }
+        .alert.show { display: block; }
+        .alert.error { background: rgba(255, 0, 85, 0.1); border-color: var(--neon-red); color: var(--neon-red); }
+        .alert.warning { background: rgba(255, 234, 0, 0.1); border-color: var(--neon-yellow); color: var(--neon-yellow); }
+
+        .logout-btn { position: fixed; top: 20px; right: 20px; padding: 8px 16px; background: rgba(255, 0, 85, 0.1); border: 1px solid var(--neon-red); color: var(--neon-red); cursor: pointer; font-family: 'Orbitron'; font-size: 0.7rem; border-radius: 3px; z-index: 100; }
+        .logout-btn.hidden { display: none; }
+        .hidden-row { display: none !important; }
+
+        /* COMPETITION TIMER */
+        .duration-picker {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            padding:14px; border:1px solid rgba(0,240,255,.28);
+            border-radius:10px; background:linear-gradient(90deg,rgba(0,240,255,.05),rgba(147,51,234,.05));
+        }
+        .duration-picker > div { display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .duration-picker select {
+            width:82px; padding:11px 8px; text-align:center; color:#fff;
+            background:#07111f; border:1px solid rgba(0,240,255,.4); border-radius:7px;
+            font-family:'Orbitron'; font-size:1rem; font-weight:700; outline:none;
+        }
+        .duration-picker select:focus { border-color:var(--cyber-cyan); box-shadow:0 0 12px rgba(0,240,255,.25); }
+        .duration-picker > b { color:var(--cyber-cyan); font-family:'Orbitron'; font-size:1.2rem; margin-bottom:18px; }
+        .duration-picker span { font-size:.55rem; color:#71869b; letter-spacing:1px; }
+        .duration-preview {
+            text-align:center; margin-top:8px; color:#71869b; font-size:.65rem; letter-spacing:1px;
+        }
+        .duration-preview strong { color:var(--neon-yellow); font-family:'Orbitron'; font-size:.85rem; }
+
+        /* CRL / IoT */
+        .crl-grid { display: grid; gap: 12px; }
+        .crl-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 18px;
+            padding: 15px; border: 1px solid rgba(0,240,255,.18);
+            border-radius: 10px; background: linear-gradient(90deg, rgba(0,240,255,.045), rgba(147,51,234,.045));
+        }
+        .crl-item strong { display:block; color:#fff; font-family:'Orbitron'; font-size:.82rem; }
+        .crl-item small { display:block; color:#8196aa; margin-top:5px; font-size:.7rem; }
+        .iot-controls { display:flex; align-items:center; gap:10px; }
+        .iot-controls select {
+            min-width:210px; padding:9px; background:#07111f; color:#e2e8f0;
+            border:1px solid rgba(0,240,255,.35); border-radius:6px; font-family:'Share Tech Mono';
+        }
+        .iot-score { min-width:70px; text-align:center; }
+        .score-box:not(.active):hover { transform:translateY(-1px); box-shadow:0 0 12px rgba(0,240,255,.25); }
+
+        /* Monitor & Modal */
+        .monitor-hero {
+            padding: 24px; margin-bottom: 18px; border-radius: 14px;
+            border: 1px solid rgba(0,240,255,.3);
+            background: radial-gradient(circle at 10% 0%, rgba(0,240,255,.14), transparent 40%),
+                        radial-gradient(circle at 90% 100%, rgba(147,51,234,.15), transparent 45%),
+                        rgba(4,10,24,.92);
+            box-shadow: 0 0 30px rgba(0,240,255,.08);
+        }
+        .monitor-hero h2 { font-family:'Orbitron'; color:#fff; letter-spacing:1px; }
+        .monitor-hero p { margin-top:7px; color:#8196aa; font-size:.75rem; }
+        .monitor-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:15px; }
+        .monitor-stat { padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:9px; background:rgba(255,255,255,.025); }
+        .monitor-stat b { display:block; color:var(--cyber-cyan); font-family:'Orbitron'; font-size:1.2rem; }
+        .monitor-stat span { color:#71869b; font-size:.68rem; }
+        .team-card {
+            position:relative; overflow:hidden; min-height:105px;
+            transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+        }
+        .team-card:hover { transform:translateY(-2px); border-color:rgba(0,240,255,.3); box-shadow:0 0 18px rgba(0,240,255,.08); }
+        .team-card .team-photo {
+            width:82px; height:62px; object-fit:cover; border-radius:7px;
+            border:1px solid rgba(0,240,255,.3); cursor:pointer;
+        }
+        .photo-stack { display:flex; gap:6px; }
+        .photo-stack .team-photo + .team-photo { margin-left:-18px; }
+        .view-photo-btn {
+            margin-top:7px; padding:5px 9px; border:1px solid var(--cyber-cyan);
+            background:rgba(0,240,255,.06); color:var(--cyber-cyan); border-radius:5px;
+            cursor:pointer; font-family:'Share Tech Mono'; font-size:.68rem;
+        }
+        .photo-modal {
+            position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center;
+            background:rgba(0,0,0,.86); backdrop-filter:blur(8px); padding:25px;
+        }
+        .photo-modal.show { display:flex; }
+        .photo-modal-box {
+            width:min(900px,100%); max-height:90vh; overflow:auto; padding:18px;
+            background:#07111f; border:1px solid var(--cyber-cyan); border-radius:14px;
+            box-shadow:0 0 35px rgba(0,240,255,.18);
+        }
+        .photo-modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+        .photo-modal-grid img { width:100%; max-height:65vh; object-fit:contain; background:#02040a; border-radius:8px; }
+        @media(max-width:700px){
+            .monitor-stats,.photo-modal-grid{grid-template-columns:1fr}
+            .crl-item{align-items:flex-start; flex-direction:column}
+            .iot-controls{width:100%}
+            .iot-controls select{flex:1; min-width:0}
+        }
+
+        /* Monitor & Modal */
+        #submissionPage { display: none; min-height: 100vh; padding: 34px 20px; }
+        #submissionPage.active { display: block; }
+        .submission-shell { width: min(1180px, 100%); margin: 0 auto; }
+        .submission-topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: rgba(4,10,24,.96); border: 1px solid rgba(0,240,255,.35); border-radius: 12px; margin-bottom: 20px; }
+        .category-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .category-tab {
+            border:1px solid rgba(255,255,255,.1); background:rgba(4,10,24,.82);
+            color:#91a5ba; border-radius:10px; padding:15px; cursor:pointer;
+            transition:all .25s ease; position:relative; overflow:hidden;
+        }
+        .category-tab::after {
+            content:''; position:absolute; left:0; bottom:0; width:0; height:2px;
+            background:var(--cyber-cyan); box-shadow:0 0 10px var(--cyber-cyan); transition:width .25s ease;
+        }
+        .category-tab.active {
+            color:#fff; border-color:var(--cyber-cyan); background:rgba(0,240,255,.1);
+            box-shadow:0 0 16px rgba(0,240,255,.09);
+        }
+        .category-tab.active::after { width:100%; }
+        .submission-panel { animation:monitorFade .25s ease; }
+        @keyframes monitorFade { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+        .team-card { display: flex; align-items: center; gap: 15px; padding: 12px 15px; border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.02); border-radius: 8px; margin-bottom: 10px; }
+        .confirm-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); }
+        .confirm-overlay.show { display: flex; }
+        .confirm-box { width: min(450px, 100%); padding: 25px; border: 1px solid rgba(0,240,255,.35); border-radius: 14px; background: #07111f; }
+    
+        /* =========================
+           MOBILE / RESPONSIVE FIX
+           ========================= */
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        img, input, select, textarea, button {
+            max-width: 100%;
+        }
+
+        .matrix-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .matrix-table {
+            min-width: 650px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .container {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            #loginMenu {
+                min-height: calc(100vh - 20px);
+                padding: 10px 0;
+            }
+
+            .login-panel {
+                max-width: 100%;
+                padding: 25px 16px;
+                border-width: 1px;
+            }
+
+            .hud-tag {
+                font-size: 0.55rem;
+                letter-spacing: 2px;
+            }
+
+            .hud-title {
+                font-size: 1.55rem;
+                line-height: 1.2;
+                margin-bottom: 16px;
+            }
+
+            .category-selector {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .category-btn {
+                width: 100%;
+                padding: 13px 10px;
+                font-size: 0.72rem;
+            }
+
+            .form-header,
+            .form-container {
+                padding: 16px;
+                margin-bottom: 12px;
+            }
+
+            .hud-title-form {
+                font-size: 1.35rem;
+                line-height: 1.2;
+            }
+
+            .form-section {
+                margin-bottom: 18px;
+                padding-bottom: 16px;
+            }
+
+            .section-title {
+                font-size: 0.8rem;
+                margin-bottom: 12px;
+                padding-left: 8px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px;
+                padding: 11px;
+            }
+
+            /* Timer tidak melebar keluar layar */
+            .duration-picker {
+                width: 100%;
+                gap: 4px;
+                padding: 10px 5px;
+            }
+
+            .duration-picker > div {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .duration-picker select {
+                width: 100%;
+                min-width: 0;
+                padding: 10px 2px;
+                font-size: 0.85rem;
+            }
+
+            .duration-picker > b {
+                flex: 0 0 auto;
+                font-size: 1rem;
+                margin-bottom: 16px;
+            }
+
+            .duration-picker span {
+                font-size: 0.48rem;
+                letter-spacing: 0;
+            }
+
+            .duration-preview {
+                font-size: 0.55rem;
+            }
+
+            .duration-preview strong {
+                font-size: 0.72rem;
+            }
+
+            /* Matrix tetap terbaca, geser horizontal jika perlu */
+            .matrix-table-wrapper {
+                border-radius: 3px;
+            }
+
+            .matrix-table {
+                min-width: 620px;
+            }
+
+            .matrix-table th,
+            .matrix-table td {
+                padding: 9px 7px;
+            }
+
+            .matrix-table th {
+                font-size: 0.68rem;
+            }
+
+            .matrix-row-header {
+                font-size: 0.7rem;
+                padding-left: 9px !important;
+            }
+
+            .score-box {
+                width: 58px;
+                min-width: 58px;
+                height: 48px;
+                padding: 0;
+                font-size: 0.8rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+
+            /* CRL / IoT */
+            .crl-item {
+                width: 100%;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .crl-item strong {
+                font-size: 0.72rem;
+            }
+
+            .crl-item small {
+                font-size: 0.62rem;
+            }
+
+            .iot-controls {
+                width: 100%;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 58px;
+                gap: 8px;
+            }
+
+            .iot-controls select {
+                min-width: 0;
+                width: 100%;
+                font-size: 14px;
+            }
+
+            .iot-score {
+                min-width: 0;
+                width: 58px;
+            }
+
+            /* Upload */
+            .file-upload-label {
+                min-height: 50px;
+                padding: 12px 8px;
+                text-align: center;
+                font-size: 0.68rem;
+            }
+
+            .image-preview {
+                max-height: 220px;
+            }
+
+            .image-preview-info {
+                font-size: 0.65rem;
+            }
+
+            /* Total */
+            .total-score-display {
+                padding: 14px 10px;
+                margin: 14px 0;
+            }
+
+            .total-score-value {
+                font-size: 2rem;
+            }
+
+            /* Tombol */
+            .button-group {
+                flex-direction: column-reverse;
+                gap: 8px;
+            }
+
+            .cyber-btn {
+                width: 100%;
+                min-height: 44px;
+                padding: 11px 14px;
+                font-size: 0.68rem;
+            }
+
+            .logout-btn {
+                position: fixed;
+                top: 8px;
+                right: 8px;
+                padding: 7px 10px;
+                font-size: 0.58rem;
+            }
+
+            /* Public monitor */
+            #submissionPage {
+                padding: 10px 0 20px;
+            }
+
+            .submission-shell {
+                width: 100%;
+            }
+
+            .submission-topbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 14px;
+                margin-bottom: 12px;
+            }
+
+            .submission-topbar h2 {
+                font-size: 1rem !important;
+                line-height: 1.3;
+                text-align: center;
+            }
+
+            .category-tabs {
+                grid-template-columns: 1fr;
+                gap: 7px;
+                margin-bottom: 12px;
+            }
+
+            .category-tab {
+                padding: 12px 10px;
+                font-size: 0.72rem;
+            }
+
+            .submission-panel {
+                padding: 10px !important;
+                border-radius: 8px !important;
+            }
+
+            .monitor-hero {
+                padding: 15px;
+                margin-bottom: 12px;
+            }
+
+            .monitor-hero h2 {
+                font-size: 1rem;
+                line-height: 1.3;
+            }
+
+            .monitor-hero p {
+                font-size: 0.65rem;
+                line-height: 1.5;
+            }
+
+            .monitor-stats {
+                grid-template-columns: 1fr;
+                gap: 7px;
+            }
+
+            .monitor-stat {
+                padding: 10px;
+            }
+
+            .monitor-stat b {
+                font-size: 1rem;
+            }
+
+            .monitor-stat span {
+                font-size: 0.58rem;
+            }
+
+            .team-card {
+                min-height: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .team-card > div {
+                text-align: left !important;
+            }
+
+            .team-card .team-photo {
+                width: 70px;
+                height: 54px;
+            }
+
+            .photo-stack {
+                justify-content: flex-start;
+            }
+
+            .photo-stack .team-photo + .team-photo {
+                margin-left: -12px;
+            }
+
+            .view-photo-btn {
+                width: 100%;
+                min-height: 40px;
+            }
+
+            /* Modal di HP */
+            .photo-modal {
+                padding: 10px;
+            }
+
+            .photo-modal-box {
+                width: 100%;
+                max-height: 94vh;
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .photo-modal-box > div:first-child {
+                gap: 8px;
+            }
+
+            .photo-modal-box h3 {
+                font-size: 0.8rem;
+                min-width: 0;
+                word-break: break-word;
+            }
+
+            .photo-modal-box .cyber-btn {
+                width: auto;
+                min-height: 38px;
+                padding: 8px 10px;
+            }
+
+            .photo-modal-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .photo-modal-grid img {
+                max-height: 55vh;
+            }
+
+            /* Konfirmasi */
+            .confirm-overlay {
+                padding: 12px;
+            }
+
+            .confirm-box {
+                width: 100%;
+                padding: 18px;
+            }
+
+            .confirm-box > div:last-child {
+                flex-direction: column;
+            }
+
+            .confirm-box .cyber-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 380px) {
+            body {
+                padding: 7px;
+            }
+
+            .login-panel,
+            .form-header,
+            .form-container {
+                padding: 13px 10px;
+            }
+
+            .hud-title {
+                font-size: 1.3rem;
+            }
+
+            .hud-title-form {
+                font-size: 1.15rem;
+            }
+
+            .duration-picker {
+                gap: 2px;
+                padding: 8px 2px;
+            }
+
+            .duration-picker select {
+                font-size: 0.75rem;
+            }
+
+            .duration-picker > b {
+                font-size: 0.85rem;
+            }
+
+            .score-box {
+                width: 52px;
+                min-width: 52px;
+                height: 44px;
+                font-size: 0.72rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div id="alertMessage" class="alert"></div>
+
+    <!-- LOGIN MENU -->
+    <div id="loginMenu" class="container">
+        <div class="login-panel">
+            <div class="hud-tag">⚖️ NEURAL ASSESSMENT SYSTEM ⚖️</div>
+            <h1 class="hud-title">JUDGE LOGIN</h1>
+            <div class="category-selector">
+                <button type="button" class="category-btn" onclick="selectCategory('EXPLORER')">🔍 EXPLORER</button>
+                <button type="button" class="category-btn" onclick="selectCategory('INNOVATOR')">⚡ INNOVATOR</button>
+                <button type="button" class="category-btn" onclick="selectCategory('MASTER')">👑 MASTER</button>
+            </div>
+            <button type="button" class="cyber-btn" style="width:100%; margin-top:20px;" onclick="showPublicMonitor()">🌐 Public Submission Monitor</button>
+        </div>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn hidden" onclick="logout()">🔙 Logout</button>
+
+    <!-- SCORING FORM -->
+    <div id="scoringForm" class="container">
+        <div class="form-header">
+            <div class="hud-tag">⚖️ SCORING PANEL ⚖️</div>
+            <h1 class="hud-title-form">AIROC 2026</h1>
+            <div style="text-align: center; color: var(--neon-yellow); font-size: 0.85rem;">Category: <span id="categoryDisplay"></span></div>
+        </div>
+
+        <div class="form-container">
+            <form id="mainScoringForm" novalidate>
+                <div id="scoringAlert" class="alert"></div>
+
+                <!-- TEAM INFO -->
+                <div class="form-section">
+                    <h2 class="section-title">Team Information</h2>
+                    <div class="form-row">
+                        <div class="form-group"><label>Judge Name *</label><input type="text" id="teamName" required placeholder="Enter Name"></div>
+                        <div class="form-group"><label>Judge ID *</label><select id="judgeID" required><option value="">-- Select ID --</option></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Date *</label><input type="date" id="matchDate" required></div>
+                        <div class="form-group duration-group">
+                            <label>Competition Duration *</label>
+                            <div class="duration-picker">
+                                <div>
+                                    <select id="durationHour" aria-label="Jam"></select>
+                                    <span>JAM</span>
+                                </div>
+                                <b>:</b>
+                                <div>
+                                    <select id="durationMinute" aria-label="Menit"></select>
+                                    <span>MENIT</span>
+                                </div>
+                                <b>:</b>
+                                <div>
+                                    <select id="durationSecond" aria-label="Detik"></select>
+                                    <span>DETIK</span>
+                                </div>
+                            </div>
+                            <div class="duration-preview">TIME RECORDED: <strong id="durationPreview">01:50:30</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABEL MATRIKS DINAMIS BERDASARKAN KATEGORI -->
+                <div class="form-section">
+                    <h2 class="section-title">Score Matrix Panel</h2>
+                    <div class="matrix-table-wrapper">
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>[Element]</th>
+                                    <th>[CONTAINMENT]</th>
+                                    <th>[NEUTRALIZATION]</th>
+                                    <th>[ANALYSIS]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matrixBody">
+                                <!-- Baris-baris elemen akan dimuat dinamis via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CRL & IOT SCORE KHUSUS INNOVATOR / MASTER -->
+                <div class="form-section" id="crlSection">
+                    <h2 class="section-title">Return to CRL & IoT</h2>
+                    <div class="crl-grid">
+                        <div class="crl-item">
+                            <div>
+                                <strong>Return CRL</strong>
+                                <small>Successful Return to CRL</small>
+                            </div>
+                            <span class="score-box" id="crlBox1" onclick="toggleCrlScore(this)">40</span>
+                        </div>
+                        <div class="crl-item">
+                            <div>
+                                <strong>Return CRL 2</strong>
+                                <small>Second Successful Return to CRL</small>
+                            </div>
+                            <span class="score-box" id="crlBox2" onclick="toggleCrlScore(this)">40</span>
+                        </div>
+                        <div class="crl-item iot-item">
+                            <div>
+                                <strong>IoT Attribute</strong>
+                                <small>30 pts per completed attribute • Max 5 attributes = 150 pts</small>
+                            </div>
+                            <div class="iot-controls">
+                                <select id="iotAttributeCount" onchange="updateIotScore()">
+                                    <option value="0">0 Attribute — 0</option>
+                                    <option value="1">1 Attribute — 30</option>
+                                    <option value="2">2 Attributes — 60</option>
+                                    <option value="3">3 Attributes — 90</option>
+                                    <option value="4">4 Attributes — 120</option>
+                                    <option value="5">5 Attributes — 150</option>
+                                </select>
+                                <span class="score-box iot-score" id="iotScoreBox">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PHOTO EVIDENCE -->
+                <div class="form-section">
+                    <h2 class="section-title">Photo Evidence (2 Photos)</h2>
+                    <div class="file-upload-wrapper">
+                        <label for="photoBukti1" class="file-upload-label">📷 Upload Photo 1</label>
+                        <input type="file" id="photoBukti1" class="file-upload-input" accept="image/*" required>
+                        <div class="image-preview-container" id="previewContainer1">
+                            <img id="previewImage1" class="image-preview">
+                            <div class="image-preview-info"><span id="fileSize1">-</span><button type="button" class="remove-image-btn" onclick="removeImage(1)">✕</button></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Photo 1 Description *</label><textarea id="photoDescription1" rows="2" required></textarea></div>
+
+                    <div class="file-upload-wrapper">
+                        <label for="photoBukti2" class="file-upload-label">📷 Upload Photo 2</label>
+                        <input type="file" id="photoBukti2" class="file-upload-input" accept="image/*" required>
+                        <div class="image-preview-container" id="previewContainer2">
+                            <img id="previewImage2" class="image-preview">
+                            <div class="image-preview-info"><span id="fileSize2">-</span><button type="button" class="remove-image-btn" onclick="removeImage(2)">✕</button></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Photo 2 Description *</label><textarea id="photoDescription2" rows="2" required></textarea></div>
+                </div>
+
+                <!-- OVERALL TOTAL BANNER -->
+                <div class="total-score-display">
+                    <div style="color:var(--cyber-cyan); font-size:0.8rem; letter-spacing:2px;">OVERALL COMBINED SCORE</div>
+                    <div class="total-score-value" id="overallTotalScore">0</div>
+                </div>
+
+                <div class="button-group">
+                    <button type="reset" class="cyber-btn reset" onclick="resetForm()">🔄 Reset</button>
+                    <button type="submit" class="cyber-btn submit">✓ Submit Score</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SUBMISSION MONITOR -->
+    <div id="submissionPage">
+        <div class="submission-shell">
+            <div class="submission-topbar">
+                <h2 style="font-family:'Orbitron'; color:#fff;">Team Submission Monitor</h2>
+                <button class="cyber-btn" onclick="logout()">Input Team Lain</button>
+            </div>
+            <div class="category-tabs">
+                <button type="button" class="category-tab active" onclick="switchTab('MASTER')">👑 MASTER</button>
+                <button type="button" class="category-tab" onclick="switchTab('INNOVATOR')">⚡ INNOVATOR</button>
+                <button type="button" class="category-tab" onclick="switchTab('EXPLORER')">🔍 EXPLORER</button>
+            </div>
+            <div class="submission-panel" style="background:rgba(4,10,24,.9); padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,.1);">
+                <div id="teamList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHOTO VIEWER -->
+    <div id="photoModal" class="photo-modal" onclick="closePhotoModal(event)">
+        <div class="photo-modal-box" onclick="event.stopPropagation()">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 id="photoModalTitle" style="font-family:'Orbitron';color:#fff;">PHOTO EVIDENCE</h3>
+                <button class="cyber-btn reset" onclick="closePhotoModal()">✕ Close</button>
+            </div>
+            <div id="photoModalGrid" class="photo-modal-grid"></div>
+        </div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
+    <div id="confirmOverlay" class="confirm-overlay">
+        <div class="confirm-box">
+            <h3 style="font-family:'Orbitron'; color:#fff; margin-bottom:10px;">KONFIRMASI</h3>
+            <p style="color:#8196aa; font-size:0.85rem; margin-bottom:20px;">Kirim penilaian tim <strong id="confirmTeamName" style="color:var(--cyber-cyan);"></strong>?</p>
+            <div style="display:flex; gap:10px;">
+                <button class="cyber-btn reset" style="flex:1;" onclick="closeConfirm()">Kembali</button>
+                <button class="cyber-btn submit" style="flex:1;" onclick="finalSubmit()">Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCieYd77wiK8JO_2CPLggb1DkqDOjBf61k",
+          authDomain: "airoc-scoring.firebaseapp.com",
+          projectId: "airoc-scoring",
+          storageBucket: "airoc-scoring.firebasestorage.app",
+          messagingSenderId: "785974843626",
+          appId: "1:785974843626:web:48571bd8b298bd6d855f93",
+          measurementId: "G-2DQ06BYMHY"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        try { getAnalytics(firebaseApp); } catch (e) { console.warn("Analytics tidak aktif:", e); }
+        const firebaseDB = getDatabase(firebaseApp);
+        const submissionsRef = ref(firebaseDB, "airoc_submissions");
+
+        window.firebaseDB = firebaseDB;
+        window.firebaseSubmissionsRef = submissionsRef;
+        window.firebasePush = push;
+        window.firebaseOnValue = onValue;
+        window.dispatchEvent(new Event("firebaseReady"));
+    </script>
+
+    <script>
+        let judgeData = { category: '' };
+        let selectedFiles = { 1: null, 2: null };
+        let submittedTeams = [];
+        let pendingData = null;
+        let firebaseReady = false;
+        let firebaseLoading = true;
+        let crlActive = false;
+        let crl2Active = false;
+        let iotScore = 0;
+
+        // Definisi baris matriks berdasarkan kategori
+        const matrixData = {
+            EXPLORER: [
+                { name: 'Red', class: 'row-red', contain: 45, neutral: null, analysis: 100 },
+                { name: 'Yellow', class: 'row-yellow', contain: 45, neutral: null, analysis: 100 },
+                { name: 'Green', class: 'row-green', contain: 45, neutral: 160, analysis: null },
+                { name: 'Blue', class: 'row-blue', contain: 45, neutral: 160, analysis: null }
+            ],
+            INNOVATOR: [
+                { name: 'Purple', class: 'row-purple', contain: 45, neutral: 160, analysis: null },
+                { name: 'Blue', class: 'row-blue', contain: 45, neutral: 160, analysis: null },
+                { name: 'Green', class: 'row-green', contain: 45, neutral: 160, analysis: null },
+                { name: 'Red', class: 'row-red', contain: 45, neutral: null, analysis: 100 },
+                { name: 'Red 2', class: 'row-red', contain: 45, neutral: null, analysis: 100 },
+                { name: 'Yellow 1', class: 'row-yellow', contain: 45, neutral: null, analysis: 100 },
+                { name: 'Yellow 2 ', class: 'row-yellow', contain: 45, neutral: null, analysis: 150 },
+                { name: 'Mystery', class: 'row-mystery', contain: 45, neutral: null, analysis: 150 }
+            ]
+        };
+
+        function pad2(n) { return String(n).padStart(2,'0'); }
+
+        function setupDurationPicker() {
+            const h = document.getElementById('durationHour');
+            const m = document.getElementById('durationMinute');
+            const s = document.getElementById('durationSecond');
+
+            if (!h || !m || !s) return;
+
+            h.innerHTML = Array.from({length:24}, (_,i) =>
+                `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
+            m.innerHTML = Array.from({length:60}, (_,i) =>
+                `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
+            s.innerHTML = Array.from({length:60}, (_,i) =>
+                `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
+
+            // Example competition result: 01:50:30
+            h.value = '01';
+            m.value = '50';
+            s.value = '30';
+
+            [h,m,s].forEach(el => el.addEventListener('change', updateDurationPreview));
+            updateDurationPreview();
+        }
+
+        function getDurationValue() {
+            const h = document.getElementById('durationHour')?.value || '00';
+            const m = document.getElementById('durationMinute')?.value || '00';
+            const s = document.getElementById('durationSecond')?.value || '00';
+            return `${h}:${m}:${s}`;
+        }
+
+        function updateDurationPreview() {
+            const value = getDurationValue();
+            const preview = document.getElementById('durationPreview');
+            if (preview) preview.textContent = value;
+        }
+
+        setupDurationPicker();
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function compressImage(file, maxSize = 1000, quality = 0.68) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(img.width * scale));
+                        canvas.height = Math.max(1, Math.round(img.height * scale));
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function initFirebaseMonitor() {
+            if (!window.firebaseSubmissionsRef || !window.firebaseOnValue) {
+                firebaseLoading = false;
+                return;
+            }
+
+            window.firebaseOnValue(window.firebaseSubmissionsRef, snapshot => {
+                const data = snapshot.val() || {};
+                submittedTeams = Object.entries(data).map(([id, value]) => ({ ...value, firebaseId: id }));
+                submittedTeams.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+                firebaseReady = true;
+                firebaseLoading = false;
+                const page = document.getElementById('submissionPage');
+                if (page && page.classList.contains('active')) {
+                    const activeTab = document.querySelector('.category-tab.active');
+                    const text = activeTab ? activeTab.textContent.trim().toUpperCase() : 'MASTER';
+                    renderMonitor(text.includes('INNOVATOR') ? 'INNOVATOR' : text.includes('EXPLORER') ? 'EXPLORER' : 'MASTER');
+                }
+            }, error => {
+                firebaseLoading = false;
+                console.error('Firebase Realtime Database error:', error);
+                alert('Gagal membaca Firebase Realtime Database. Cek Database Rules dan koneksi.');
+            });
+        }
+
+        async function saveSubmissionToFirebase(data) {
+            if (!window.firebaseSubmissionsRef || !window.firebasePush) {
+                throw new Error('Firebase belum siap.');
+            }
+            const submission = {
+                ...data,
+                submittedAt: Date.now(),
+                judgeId: document.getElementById('judgeID')?.value || '',
+                judgeName: document.getElementById('judgeName')?.value || ''
+            };
+            const newRef = window.firebasePush(window.firebaseSubmissionsRef, submission);
+            return newRef.key;
+        }
+
+        window.addEventListener("firebaseReady", initFirebaseMonitor);
+
+        function selectCategory(cat) {
+            judgeData.category = cat;
+            document.getElementById('loginMenu').classList.add('hidden');
+            document.getElementById('scoringForm').classList.add('active');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('categoryDisplay').textContent = cat;
+            document.getElementById('matchDate').value = new Date().toISOString().split('T')[0];
+
+            // Setup ID Juri
+            const select = document.getElementById('judgeID');
+            select.innerHTML = '<option value="">-- Select ID --</option>';
+            let prefix = cat === 'INNOVATOR' ? 'IN-' : (cat === 'MASTER' ? 'M-' : 'EXP-');
+            for(let i=1; i<=25; i++) {
+                let opt = document.createElement('option');
+                opt.value = opt.textContent = `${prefix}${String(i).padStart(2,'0')}`;
+                select.appendChild(opt);
+            }
+
+            // Tampilkan atau Sembunyikan bagian CRL score
+            if(cat === 'EXPLORER') {
+                document.getElementById('crlSection').classList.add('hidden-row');
+                crlActive = false;
+            } else {
+                document.getElementById('crlSection').classList.remove('hidden-row');
+            }
+
+            buildMatrixTable(cat === 'EXPLORER' ? 'EXPLORER' : 'INNOVATOR');
+            calculateTotals();
+        }
+
+        function buildMatrixTable(type) {
+            let tbody = document.getElementById('matrixBody');
+            tbody.innerHTML = '';
+            let rows = matrixData[type];
+
+            rows.forEach(r => {
+                let tr = document.createElement('tr');
+                tr.className = r.class;
+
+                // Nama Elemen
+                let tdName = document.createElement('td');
+                tdName.className = 'matrix-row-header';
+                tdName.textContent = r.name;
+                tr.appendChild(tdName);
+
+                // Containment
+                tr.appendChild(createCell(r.contain));
+                // Neutralization
+                tr.appendChild(createCell(r.neutral));
+                // Analysis
+                tr.appendChild(createCell(r.analysis));
+
+                tbody.appendChild(tr);
+            });
+
+            // Baris Total di Bawah
+            let totalTr = document.createElement('tr');
+            totalTr.className = 'matrix-total-row';
+            totalTr.innerHTML = `
+                <td class="matrix-row-header">TOTAL SCORE:</td>
+                <td id="totalContainCell">0</td>
+                <td id="totalNeutralCell">0</td>
+                <td id="totalAnalysisCell">0</td>
+            `;
+            tbody.appendChild(totalTr);
+        }
+
+        function createCell(val) {
+            let td = document.createElement('td');
+            if(val !== null) {
+                let box = document.createElement('span');
+                box.className = 'score-box';
+                box.textContent = val;
+                box.onclick = function() {
+                    this.classList.toggle('active');
+                    calculateTotals();
+                };
+                td.appendChild(box);
+            } else {
+                td.className = 'matrix-disabled';
+                td.textContent = '////';
+            }
+            return td;
+        }
+
+        function toggleCrlScore(el) {
+            el.classList.toggle('active');
+            crlActive = document.getElementById('crlBox1').classList.contains('active');
+            crl2Active = document.getElementById('crlBox2').classList.contains('active');
+            calculateTotals();
+        }
+
+        function updateIotScore() {
+            const count = parseInt(document.getElementById('iotAttributeCount').value) || 0;
+            iotScore = count * 30;
+            document.getElementById('iotScoreBox').textContent = iotScore;
+            if (iotScore > 0) document.getElementById('iotScoreBox').classList.add('active');
+            else document.getElementById('iotScoreBox').classList.remove('active');
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let totalContain = 0, totalNeutral = 0, totalAnalysis = 0;
+
+            document.querySelectorAll('.matrix-table .score-box.active').forEach(box => {
+                let val = parseInt(box.textContent) || 0;
+                let cellIndex = box.closest('td').cellIndex;
+                if (cellIndex === 1) totalContain += val;
+                else if (cellIndex === 2) totalNeutral += val;
+                else if (cellIndex === 3) totalAnalysis += val;
+            });
+
+            document.getElementById('totalContainCell').textContent = totalContain;
+            document.getElementById('totalNeutralCell').textContent = totalNeutral;
+            document.getElementById('totalAnalysisCell').textContent = totalAnalysis;
+
+            const crlBonus = (crlActive ? 40 : 0) + (crl2Active ? 40 : 0);
+            const overall = totalContain + totalNeutral + totalAnalysis + crlBonus + iotScore;
+            document.getElementById('overallTotalScore').textContent = overall;
+        }
+
+        // Upload handler
+        [1, 2].forEach(num => {
+            document.getElementById(`photoBukti${num}`).addEventListener('change', function(e) {
+                if(this.files[0]) {
+                    let file = this.files[0];
+                    let reader = new FileReader();
+                    reader.onload = function(evt) {
+                        document.getElementById(`previewImage${num}`).src = evt.target.result;
+                        document.getElementById(`previewContainer${num}`).classList.add('show');
+                        document.getElementById(`fileSize${num}`).textContent = `${(file.size/1024).toFixed(1)} KB`;
+                        selectedFiles[num] = file;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        function removeImage(num) {
+            document.getElementById(`previewContainer${num}`).classList.remove('show');
+            document.getElementById(`photoBukti${num}`).value = '';
+            selectedFiles[num] = null;
+        }
+
+        document.getElementById('mainScoringForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            let name = document.getElementById('teamName').value.trim();
+            if(!name) { alert('Nama Team wajib diisi!'); return; }
+            const duration = getDurationValue();
+            if(!/^([0-9]{2}):([0-5][0-9]):([0-5][0-9])$/.test(duration)) {
+                alert('Duration harus menggunakan format HH:MM:SS, contoh 01:50:30');
+                return;
+            }
+            if(!selectedFiles[1] || !selectedFiles[2]) { alert('Harap upload 2 foto bukti!'); return; }
+
+            document.getElementById('confirmTeamName').textContent = name;
+            document.getElementById('confirmOverlay').classList.add('show');
+
+            try {
+                const [photo1, photo2] = await Promise.all([
+                    compressImage(selectedFiles[1]),
+                    compressImage(selectedFiles[2])
+                ]);
+
+                pendingData = {
+                    team: name,
+                    category: judgeData.category,
+                    total: Number(document.getElementById('overallTotalScore').textContent) || 0,
+                    date: document.getElementById('matchDate').value,
+                    duration: getDurationValue(),
+                    crl1: crlActive ? 40 : 0,
+                    crl2: crl2Active ? 40 : 0,
+                    iot: iotScore,
+                    photos: [
+                        { src: photo1, description: document.getElementById('photoDescription1').value },
+                        { src: photo2, description: document.getElementById('photoDescription2').value }
+                    ]
+                };
+            } catch (error) {
+                console.error(error);
+                pendingData = null;
+                closeConfirm();
+                alert('Foto gagal diproses. Silakan coba lagi.');
+            }
+        });
+
+        function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); }
+
+        async function finalSubmit() {
+            if (!pendingData) {
+                alert('Data penilaian belum siap.');
+                return;
+            }
+
+            const sendButton = document.querySelector('#confirmOverlay .cyber-btn.submit');
+            if (sendButton) {
+                sendButton.disabled = true;
+                sendButton.textContent = 'MENGIRIM...';
+            }
+
+            try {
+                const firebaseId = await saveSubmissionToFirebase(pendingData);
+                console.log('Submission saved to Firebase:', firebaseId);
+                pendingData = null;
+                closeConfirm();
+                showPublicMonitor();
+            } catch (error) {
+                console.error('Firebase write failed:', error);
+                alert('Data gagal disimpan ke Firebase. Cek Realtime Database Rules dan koneksi internet.\n\nDetail: ' + (error?.message || error));
+            } finally {
+                if (sendButton) {
+                    sendButton.disabled = false;
+                    sendButton.textContent = 'Kirim';
+                }
+            }
+        }
+
+        function showPublicMonitor() {
+            document.getElementById('loginMenu').classList.add('hidden');
+            document.getElementById('scoringForm').classList.remove('active');
+            document.getElementById('submissionPage').classList.add('active');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            renderMonitor('MASTER');
+        }
+
+        function logout() {
+            document.getElementById('loginMenu').classList.remove('hidden');
+            document.getElementById('scoringForm').classList.remove('active');
+            document.getElementById('submissionPage').classList.remove('active');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('mainScoringForm').reset();
+        }
+
+        function renderMonitor(cat) {
+            const list = document.getElementById('teamList');
+
+            // IMPORTANT: render into ONE container only.
+            // This prevents the previous MASTER view from stacking with INNOVATOR/EXPLORER.
+            list.innerHTML = '';
+
+            // Update active tab so only the selected category is highlighted.
+            document.querySelectorAll('.category-tab').forEach(btn => {
+                const btnCat = (btn.textContent || '').toUpperCase();
+                btn.classList.toggle('active', btnCat.includes(cat));
+            });
+
+            const filtered = submittedTeams.filter(t => t.category === cat);
+            const totalTeams = filtered.length;
+            const totalPoints = filtered.reduce((sum,t) => sum + (parseInt(t.total)||0), 0);
+
+            const hero = document.createElement('div');
+            hero.className = 'monitor-hero';
+            hero.innerHTML = `
+                <div style="font-size:.65rem;color:var(--cyber-cyan);letter-spacing:3px;">
+                    LIVE SUBMISSION FEED // ${cat}
+                </div>
+                <h2>TEAM SUBMISSION MONITOR</h2>
+                <p>Menampilkan submission kategori <b style="color:#fff">${cat}</b>. Klik photo evidence untuk melihat bukti peserta.</p>
+                <div class="monitor-stats">
+                    <div class="monitor-stat"><b>${totalTeams}</b><span>SUBMITTED TEAMS</span></div>
+                    <div class="monitor-stat"><b>${totalPoints}</b><span>COMBINED SCORE</span></div>
+                    <div class="monitor-stat"><b>${filtered.filter(t=>t.photos?.length).length}</b><span>PHOTO EVIDENCE</span></div>
+                </div>`;
+            list.appendChild(hero);
+
+            if (!filtered.length) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'text-align:center;padding:30px;color:#6f8498;';
+                empty.textContent = `Belum ada data untuk kategori ${cat}`;
+                list.appendChild(empty);
+                return;
+            }
+
+            filtered.forEach((t, idx) => {
+                const originalIndex = submittedTeams.indexOf(t);
+                const card = document.createElement('div');
+                card.className = 'team-card';
+
+                const photos = (t.photos || []).filter(p => p.src);
+                let photoHtml = `<span style="color:#71869b;font-size:.7rem;">NO PHOTO</span>`;
+
+                if (photos.length) {
+                    photoHtml = `
+                        <div class="photo-stack">
+                            ${photos.slice(0,2).map((p,i) =>
+                                `<img class="team-photo" src="${p.src}" alt="Photo ${i+1}" onclick="openPhotoModal(${originalIndex})">`
+                            ).join('')}
+                        </div>
+                        <button class="view-photo-btn" onclick="openPhotoModal(${originalIndex})">📷 CHECK PHOTO EVIDENCE</button>`;
+                }
+
+                card.innerHTML = `
+                    <div><b style="font-family:'Orbitron';color:var(--cyber-cyan);">${String(idx+1).padStart(2,'0')}</b></div>
+                    <div style="flex:1;">
+                        <div style="color:#fff;font-family:'Orbitron';font-size:.9rem;">${t.team}</div>
+                        <div style="font-size:.7rem;color:#71869b;margin-top:5px;">
+                            SCORE <b style="color:var(--neon-yellow);">${t.total}</b>
+                            &nbsp;•&nbsp; ${t.date}
+                            &nbsp;•&nbsp; DURATION <b style="color:#fff;">${t.duration || '-'}</b>
+                        </div>
+                        <div style="font-size:.65rem;color:#8196aa;margin-top:5px;">
+                            CRL: ${t.crl1||0} &nbsp;|&nbsp; CRL 2: ${t.crl2||0} &nbsp;|&nbsp; IoT: ${t.iot||0}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        ${photoHtml}
+                        <div style="color:var(--neon-green);font-size:.68rem;margin-top:6px;">✓ SUBMITTED</div>
+                    </div>`;
+
+                list.appendChild(card);
+            });
+        }
+
+        function switchTab(cat) {
+            // Force a clean category switch — no append, no stacking.
+            renderMonitor(cat);
+
+            const panel = document.querySelector('.submission-panel');
+            if (panel) {
+                panel.style.animation = 'none';
+                void panel.offsetWidth;
+                panel.style.animation = 'monitorFade .25s ease';
+            }
+        }
+
+        function openPhotoModal(teamIndex) {
+            const t = submittedTeams[teamIndex];
+            if(!t) return;
+            document.getElementById('photoModalTitle').textContent = `PHOTO EVIDENCE // ${t.team}`;
+            document.getElementById('photoModalGrid').innerHTML = (t.photos || []).map((p,i) => `
+                <div>
+                    <img src="${p.src}" alt="Photo ${i+1}">
+                    <div style="padding:8px;color:#8196aa;font-size:.72rem;">PHOTO ${i+1}: ${p.description || 'No description'}</div>
+                </div>
+            `).join('');
+            document.getElementById('photoModal').classList.add('show');
+        }
+
+        function closePhotoModal(e) {
+            if(!e || e.target.id === 'photoModal') document.getElementById('photoModal').classList.remove('show');
+        }
+
+        function resetForm() {
+            document.getElementById('mainScoringForm').reset();
+            document.getElementById('durationHour').value = '00';
+            document.getElementById('durationMinute').value = '00';
+            document.getElementById('durationSecond').value = '00';
+            updateDurationPreview();
+            document.querySelectorAll('.score-box').forEach(b => b.classList.remove('active'));
+            crlActive = false;
+            crl2Active = false;
+            iotScore = 0;
+            document.getElementById('crlBox1')?.classList.remove('active');
+            document.getElementById('crlBox2')?.classList.remove('active');
+            document.getElementById('iotAttributeCount').value = '0';
+            document.getElementById('iotScoreBox').textContent = '0';
+            document.getElementById('iotScoreBox').classList.remove('active');
+            calculateTotals();
+        }
+    </script>
+</body>
+</html>
