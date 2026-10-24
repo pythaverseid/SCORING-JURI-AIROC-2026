@@ -271,7 +271,7 @@
         .confirm-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); }
         .confirm-overlay.show { display: flex; }
         .confirm-box { width: min(450px, 100%); padding: 25px; border: 1px solid rgba(0,240,255,.35); border-radius: 14px; background: #07111f; }
-    
+
         /* =========================
            MOBILE / RESPONSIVE FIX
            ========================= */
@@ -819,25 +819,25 @@
                     </div>
                 </div>
 
-                <!-- CRL & IOT SCORE KHUSUS INNOVATOR / MASTER -->
+                <!-- CRL & IOT SCORE (EXPLORER: hanya Return CRL | INNOVATOR / MASTER: lengkap) -->
                 <div class="form-section" id="crlSection">
-                    <h2 class="section-title">Return to CRL & IoT</h2>
+                    <h2 class="section-title" id="crlTitle">Return to CRL & IoT</h2>
                     <div class="crl-grid">
-                        <div class="crl-item">
+                        <div class="crl-item" id="crlItem1">
                             <div>
                                 <strong>Return CRL</strong>
                                 <small>Successful Return to CRL</small>
                             </div>
                             <span class="score-box" id="crlBox1" onclick="toggleCrlScore(this)">40</span>
                         </div>
-                        <div class="crl-item">
+                        <div class="crl-item" id="crlItem2">
                             <div>
                                 <strong>Return CRL 2</strong>
                                 <small>Second Successful Return to CRL</small>
                             </div>
                             <span class="score-box" id="crlBox2" onclick="toggleCrlScore(this)">40</span>
                         </div>
-                        <div class="crl-item iot-item">
+                        <div class="crl-item iot-item" id="iotItem">
                             <div>
                                 <strong>IoT Attribute</strong>
                                 <small>30 pts per completed attribute • Max 5 attributes = 150 pts</small>
@@ -1124,12 +1124,29 @@
                 select.appendChild(opt);
             }
 
-            // Tampilkan atau Sembunyikan bagian CRL score
-            if(cat === 'EXPLORER') {
-                document.getElementById('crlSection').classList.add('hidden-row');
-                crlActive = false;
+            // Reset skor CRL & IoT setiap ganti kategori
+            crlActive = false;
+            crl2Active = false;
+            iotScore = 0;
+            document.getElementById('crlBox1').classList.remove('active');
+            document.getElementById('crlBox2').classList.remove('active');
+            document.getElementById('iotAttributeCount').value = '0';
+            document.getElementById('iotScoreBox').textContent = '0';
+            document.getElementById('iotScoreBox').classList.remove('active');
+
+            // Bagian CRL tampil untuk semua kategori
+            document.getElementById('crlSection').classList.remove('hidden-row');
+
+            if (cat === 'EXPLORER') {
+                // Explorer: hanya Return CRL (40)
+                document.getElementById('crlItem2').classList.add('hidden-row');
+                document.getElementById('iotItem').classList.add('hidden-row');
+                document.getElementById('crlTitle').textContent = 'Return to CRL';
             } else {
-                document.getElementById('crlSection').classList.remove('hidden-row');
+                // Innovator & Master: Return CRL, Return CRL 2, dan IoT
+                document.getElementById('crlItem2').classList.remove('hidden-row');
+                document.getElementById('iotItem').classList.remove('hidden-row');
+                document.getElementById('crlTitle').textContent = 'Return to CRL & IoT';
             }
 
             buildMatrixTable(cat === 'EXPLORER' ? 'EXPLORER' : 'INNOVATOR');
