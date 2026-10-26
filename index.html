@@ -165,12 +165,15 @@
             border-radius:10px; background:linear-gradient(90deg,rgba(0,240,255,.05),rgba(147,51,234,.05));
         }
         .duration-picker > div { display:flex; flex-direction:column; align-items:center; gap:5px; }
-        .duration-picker select {
+        .duration-picker select, .duration-picker input {
             width:82px; padding:11px 8px; text-align:center; color:#fff;
             background:#07111f; border:1px solid rgba(0,240,255,.4); border-radius:7px;
             font-family:'Orbitron'; font-size:1rem; font-weight:700; outline:none;
         }
-        .duration-picker select:focus { border-color:var(--cyber-cyan); box-shadow:0 0 12px rgba(0,240,255,.25); }
+        .duration-picker input { -moz-appearance:textfield; box-sizing:border-box; }
+        .duration-picker input::-webkit-outer-spin-button, .duration-picker input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+        .duration-picker select:disabled, .duration-picker input:disabled { opacity:.45; }
+        .duration-picker select:focus, .duration-picker input:focus { border-color:var(--cyber-cyan); box-shadow:0 0 12px rgba(0,240,255,.25); }
         .duration-picker > b { color:var(--cyber-cyan); font-family:'Orbitron'; font-size:1.2rem; margin-bottom:18px; }
         .duration-picker span { font-size:.55rem; color:#71869b; letter-spacing:1px; }
         .duration-preview {
@@ -271,7 +274,7 @@
         .confirm-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); }
         .confirm-overlay.show { display: flex; }
         .confirm-box { width: min(450px, 100%); padding: 25px; border: 1px solid rgba(0,240,255,.35); border-radius: 14px; background: #07111f; }
-
+    
         /* =========================
            MOBILE / RESPONSIVE FIX
            ========================= */
@@ -390,7 +393,7 @@
                 min-width: 0;
             }
 
-            .duration-picker select {
+            .duration-picker select, .duration-picker input {
                 width: 100%;
                 min-width: 0;
                 padding: 10px 2px;
@@ -714,7 +717,7 @@
                 padding: 8px 2px;
             }
 
-            .duration-picker select {
+            .duration-picker select, .duration-picker input {
                 font-size: 0.75rem;
             }
 
@@ -734,6 +737,34 @@
             }
         }
 
+
+        /* WINNERS PAGE */
+        #winnersPage { display: none; min-height: 100vh; padding: 34px 20px; }
+        #winnersPage.active { display: block; }
+        .win-cat { margin-bottom: 26px; padding: 20px; border-radius: 14px; background: rgba(4,10,24,.92); border: 1px solid rgba(0,240,255,.25); }
+        .win-cat-title { font-family:'Orbitron'; color:#fff; font-size:1.15rem; letter-spacing:2px; margin-bottom:4px; }
+        .win-cat-sub { color:#71869b; font-size:.65rem; letter-spacing:2px; margin-bottom:16px; }
+        .win-group-label { font-family:'Orbitron'; font-size:.7rem; letter-spacing:2px; color:var(--cyber-cyan); margin:14px 0 10px; }
+        .win-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+        .win-card { padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); min-height:120px; display:flex; flex-direction:column; gap:8px; }
+        .win-badge { font-family:'Orbitron'; font-size:.72rem; font-weight:700; letter-spacing:1px; }
+        .win-team { font-family:'Orbitron'; color:#fff; font-size:1rem; word-break:break-word; }
+        .win-meta { font-size:.68rem; color:#8196aa; line-height:1.6; }
+        .win-meta b { color:var(--neon-yellow); }
+        .win-empty { color:#4d6073; font-size:.75rem; margin-top:auto; }
+        .win-gold   { border-color:#ffd700; background:linear-gradient(135deg,rgba(255,215,0,.14),rgba(255,215,0,.03)); box-shadow:0 0 18px rgba(255,215,0,.15); }
+        .win-gold .win-badge { color:#ffd700; }
+        .win-silver { border-color:#c0c8d4; background:linear-gradient(135deg,rgba(192,200,212,.13),rgba(192,200,212,.03)); }
+        .win-silver .win-badge { color:#d5dce6; }
+        .win-bronze { border-color:#cd7f32; background:linear-gradient(135deg,rgba(205,127,50,.14),rgba(205,127,50,.03)); }
+        .win-bronze .win-badge { color:#e29a55; }
+        .win-hope   { border-color:rgba(0,240,255,.35); background:rgba(0,240,255,.05); }
+        .win-hope .win-badge { color:var(--cyber-cyan); }
+        @media (max-width:700px){
+            #winnersPage { padding:10px 0 20px; }
+            .win-grid { grid-template-columns:1fr; }
+            .win-cat { padding:14px 12px; }
+        }
     </style>
 </head>
 <body>
@@ -750,6 +781,7 @@
                 <button type="button" class="category-btn" onclick="selectCategory('MASTER')">👑 MASTER</button>
             </div>
             <button type="button" class="cyber-btn" style="width:100%; margin-top:20px;" onclick="showPublicMonitor()">🌐 Public Submission Monitor</button>
+            <button type="button" class="cyber-btn" style="width:100%; margin-top:10px; border-color:var(--neon-yellow); color:var(--neon-yellow);" onclick="showWinnersPage()">🏆 Halaman Juara</button>
         </div>
     </div>
 
@@ -777,13 +809,8 @@
                     <div class="form-row">
                         <div class="form-group"><label>Date *</label><input type="date" id="matchDate" required></div>
                         <div class="form-group duration-group">
-                            <label>Competition Duration *</label>
+                            <label>Competition Time * (maks. 2 menit)</label>
                             <div class="duration-picker">
-                                <div>
-                                    <select id="durationHour" aria-label="Jam"></select>
-                                    <span>JAM</span>
-                                </div>
-                                <b>:</b>
                                 <div>
                                     <select id="durationMinute" aria-label="Menit"></select>
                                     <span>MENIT</span>
@@ -793,8 +820,13 @@
                                     <select id="durationSecond" aria-label="Detik"></select>
                                     <span>DETIK</span>
                                 </div>
+                                <b>.</b>
+                                <div>
+                                    <input type="number" id="durationMs" aria-label="Milidetik" min="0" max="999" step="1" inputmode="numeric" value="000">
+                                    <span>MILIDETIK</span>
+                                </div>
                             </div>
-                            <div class="duration-preview">TIME RECORDED: <strong id="durationPreview">01:50:30</strong></div>
+                            <div class="duration-preview">TIME RECORDED: <strong id="durationPreview">00:00.000</strong></div>
                         </div>
                     </div>
                 </div>
@@ -819,11 +851,11 @@
                     </div>
                 </div>
 
-                <!-- CRL & IOT SCORE (EXPLORER: hanya Return CRL | INNOVATOR / MASTER: lengkap) -->
+                <!-- CRL & IOT SCORE KHUSUS INNOVATOR / MASTER -->
                 <div class="form-section" id="crlSection">
                     <h2 class="section-title" id="crlTitle">Return to CRL & IoT</h2>
                     <div class="crl-grid">
-                        <div class="crl-item" id="crlItem1">
+                        <div class="crl-item">
                             <div>
                                 <strong>Return CRL</strong>
                                 <small>Successful Return to CRL</small>
@@ -900,7 +932,10 @@
         <div class="submission-shell">
             <div class="submission-topbar">
                 <h2 style="font-family:'Orbitron'; color:#fff;">Team Submission Monitor</h2>
-                <button class="cyber-btn" onclick="logout()">Input Team Lain</button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="cyber-btn" style="border-color:var(--neon-yellow); color:var(--neon-yellow);" onclick="showWinnersPage()">🏆 Halaman Juara</button>
+                    <button class="cyber-btn" onclick="logout()">Input Team Lain</button>
+                </div>
             </div>
             <div class="category-tabs">
                 <button type="button" class="category-tab active" onclick="switchTab('MASTER')">👑 MASTER</button>
@@ -910,6 +945,20 @@
             <div class="submission-panel" style="background:rgba(4,10,24,.9); padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,.1);">
                 <div id="teamList"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- WINNERS PAGE -->
+    <div id="winnersPage">
+        <div class="submission-shell">
+            <div class="submission-topbar">
+                <h2 style="font-family:'Orbitron'; color:#fff;">🏆 AIROC 2026 // WINNERS</h2>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="cyber-btn" onclick="showPublicMonitor()">📊 Monitor</button>
+                    <button class="cyber-btn reset" onclick="logout()">🔙 Menu Utama</button>
+                </div>
+            </div>
+            <div id="winnersContent"></div>
         </div>
     </div>
 
@@ -939,7 +988,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCieYd77wiK8JO_2CPLggb1DkqDOjBf61k",
@@ -960,6 +1009,8 @@
         window.firebaseSubmissionsRef = submissionsRef;
         window.firebasePush = push;
         window.firebaseOnValue = onValue;
+        window.firebaseRemove = remove;
+        window.firebaseRef = ref;
         window.dispatchEvent(new Event("firebaseReady"));
     </script>
 
@@ -989,7 +1040,7 @@
                 { name: 'Red', class: 'row-red', contain: 45, neutral: null, analysis: 100 },
                 { name: 'Red 2', class: 'row-red', contain: 45, neutral: null, analysis: 100 },
                 { name: 'Yellow 1', class: 'row-yellow', contain: 45, neutral: null, analysis: 100 },
-                { name: 'Yellow 2 ', class: 'row-yellow', contain: 45, neutral: null, analysis: 100 },
+                { name: 'Yellow 2', class: 'row-yellow', contain: 45, neutral: null, analysis: 100 },
                 { name: 'Mystery', class: 'row-mystery', contain: 45, neutral: null, analysis: 150 }
             ]
         };
@@ -997,39 +1048,48 @@
         function pad2(n) { return String(n).padStart(2,'0'); }
 
         function setupDurationPicker() {
-            const h = document.getElementById('durationHour');
             const m = document.getElementById('durationMinute');
-            const s = document.getElementById('durationSecond');
+            const sec = document.getElementById('durationSecond');
+            const ms = document.getElementById('durationMs');
+            if (!m || !sec || !ms) return;
 
-            if (!h || !m || !s) return;
-
-            h.innerHTML = Array.from({length:24}, (_,i) =>
+            // Maks 2 menit: menit hanya 00, 01, 02
+            m.innerHTML = [0,1,2].map(i => `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
+            sec.innerHTML = Array.from({length:60}, (_,i) =>
                 `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
-            m.innerHTML = Array.from({length:60}, (_,i) =>
-                `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
-            s.innerHTML = Array.from({length:60}, (_,i) =>
-                `<option value="${pad2(i)}">${pad2(i)}</option>`).join('');
+            m.value = '00'; sec.value = '00'; ms.value = '000';
 
-            // Example competition result: 01:50:30
-            h.value = '01';
-            m.value = '50';
-            s.value = '30';
-
-            [h,m,s].forEach(el => el.addEventListener('change', updateDurationPreview));
+            m.addEventListener('change', updateDurationPreview);
+            sec.addEventListener('change', updateDurationPreview);
+            ms.addEventListener('input', () => {
+                ms.value = ms.value.replace(/\D/g, '').slice(0, 3);
+                updateDurationPreview();
+            });
+            ms.addEventListener('blur', updateDurationPreview);
             updateDurationPreview();
         }
 
         function getDurationValue() {
-            const h = document.getElementById('durationHour')?.value || '00';
             const m = document.getElementById('durationMinute')?.value || '00';
-            const s = document.getElementById('durationSecond')?.value || '00';
-            return `${h}:${m}:${s}`;
+            const sec = document.getElementById('durationSecond')?.value || '00';
+            let ms = parseInt(document.getElementById('durationMs')?.value, 10);
+            if (isNaN(ms) || ms < 0) ms = 0;
+            if (ms > 999) ms = 999;
+            return `${m}:${sec}.${String(ms).padStart(3,'0')}`;
         }
 
         function updateDurationPreview() {
-            const value = getDurationValue();
+            const m = document.getElementById('durationMinute');
+            const sec = document.getElementById('durationSecond');
+            const ms = document.getElementById('durationMs');
+            // Jika 02 menit, otomatis dikunci 02:00.000 (batas maksimal)
+            const atMax = m && m.value === '02';
+            if (atMax) { sec.value = '00'; ms.value = '000'; }
+            if (sec) sec.disabled = atMax;
+            if (ms) ms.disabled = atMax;
+
             const preview = document.getElementById('durationPreview');
-            if (preview) preview.textContent = value;
+            if (preview) preview.textContent = getDurationValue();
         }
 
         setupDurationPicker();
@@ -1041,6 +1101,85 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+
+        const AWARDS = ['JUARA 1','JUARA 2','JUARA 3','HARAPAN 1','HARAPAN 2','HARAPAN 3'];
+
+        // Ubah waktu jadi milidetik (angka mentah, tanpa aturan khusus)
+        //  - Format baru  "MM:SS.mmm"  contoh 01:23.456
+        //  - Format lama  "HH:MM:SS"   contoh 01:00:00 (data lama tetap terbaca)
+        // Format tidak dikenal = Infinity
+        function durationToMsRaw(d) {
+            d = String(d || '').trim();
+            let m = /^(\d{2}):([0-5]\d)\.(\d{3})$/.exec(d);
+            if (m) return (+m[1]) * 60000 + (+m[2]) * 1000 + (+m[3]);
+            m = /^(\d{2,}):([0-5]\d):([0-5]\d)$/.exec(d);
+            if (m) return (+m[1]) * 3600000 + (+m[2]) * 60000 + (+m[3]) * 1000;
+            return Infinity;
+        }
+
+        // Khusus ranking: waktu 0 / kosong dianggap belum diisi, jadi dihitung paling lambat
+        function durationToMs(d) {
+            const v = durationToMsRaw(d);
+            return v > 0 ? v : Infinity;
+        }
+
+        // Urutan peringkat satu kategori: skor tertinggi -> durasi tercepat -> submit paling awal
+        function getRankedTeams(category) {
+            return submittedTeams
+                .filter(t => t.category === category)
+                .slice()
+                .sort((a, b) => {
+                    const sa = Number(a.total) || 0, sb = Number(b.total) || 0;
+                    if (sb !== sa) return sb - sa;
+                    const da = durationToMs(a.duration);
+                    const db = durationToMs(b.duration);
+                    if (da !== db) return da - db;
+                    return (a.submittedAt || 0) - (b.submittedAt || 0);
+                });
+        }
+
+        // Hasil: Map { firebaseId -> "JUARA 1" ... "HARAPAN 3" } per kategori
+        function getAwardMap(category) {
+            const map = new Map();
+            getRankedTeams(category).slice(0, AWARDS.length).forEach((t, i) => map.set(t.firebaseId, AWARDS[i]));
+            return map;
+        }
+
+        const ADMIN_PIN = '2026';   // GANTI dengan PIN Anda
+        let adminMode = false;
+
+        function currentMonitorCategory() {
+            const active = document.querySelector('.category-tab.active');
+            const text = active ? active.textContent.toUpperCase() : 'MASTER';
+            return text.includes('INNOVATOR') ? 'INNOVATOR' : text.includes('EXPLORER') ? 'EXPLORER' : 'MASTER';
+        }
+
+        function toggleAdmin() {
+            if (adminMode) {
+                adminMode = false;
+            } else {
+                const pin = prompt('Masukkan PIN admin:');
+                if (pin === null) return;
+                if (pin !== ADMIN_PIN) { alert('PIN salah.'); return; }
+                adminMode = true;
+            }
+            renderMonitor(currentMonitorCategory());
+        }
+
+        async function deleteSubmission(id) {
+            if (!adminMode) return;
+            const t = submittedTeams.find(x => x.firebaseId === id);
+            const name = t ? t.team : id;
+            if (!confirm('Hapus data "' + name + '"?\nData di database juga akan terhapus permanen.')) return;
+            try {
+                await window.firebaseRemove(
+                    window.firebaseRef(window.firebaseDB, 'airoc_submissions/' + id)
+                );
+            } catch (error) {
+                console.error('Hapus gagal:', error);
+                alert('Gagal menghapus data. Cek Database Rules dan koneksi.\n\nDetail: ' + (error?.message || error));
+            }
         }
 
         function compressImage(file, maxSize = 1000, quality = 0.68) {
@@ -1077,6 +1216,8 @@
                 submittedTeams.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
                 firebaseReady = true;
                 firebaseLoading = false;
+                const wp = document.getElementById('winnersPage');
+                if (wp && wp.classList.contains('active')) renderWinners();
                 const page = document.getElementById('submissionPage');
                 if (page && page.classList.contains('active')) {
                     const activeTab = document.querySelector('.category-tab.active');
@@ -1124,30 +1265,19 @@
                 select.appendChild(opt);
             }
 
-            // Reset skor CRL & IoT setiap ganti kategori
-            crlActive = false;
-            crl2Active = false;
-            iotScore = 0;
-            document.getElementById('crlBox1').classList.remove('active');
-            document.getElementById('crlBox2').classList.remove('active');
-            document.getElementById('iotAttributeCount').value = '0';
+            // Tampilkan atau Sembunyikan bagian CRL score
+            // Reset semua skor CRL & IoT saat ganti kategori
+            crlActive = false; crl2Active = false; iotScore = 0;
+            ['crlBox1','crlBox2','iotScoreBox'].forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById('iotScoreBox').textContent = '0';
-            document.getElementById('iotScoreBox').classList.remove('active');
+            document.getElementById('iotAttributeCount').value = '0';
 
-            // Bagian CRL tampil untuk semua kategori
+            // EXPLORER: hanya Return CRL (40). INNOVATOR / MASTER: Return CRL, Return CRL 2, dan IoT
+            const isExplorer = (cat === 'EXPLORER');
             document.getElementById('crlSection').classList.remove('hidden-row');
-
-            if (cat === 'EXPLORER') {
-                // Explorer: hanya Return CRL (40)
-                document.getElementById('crlItem2').classList.add('hidden-row');
-                document.getElementById('iotItem').classList.add('hidden-row');
-                document.getElementById('crlTitle').textContent = 'Return to CRL';
-            } else {
-                // Innovator & Master: Return CRL, Return CRL 2, dan IoT
-                document.getElementById('crlItem2').classList.remove('hidden-row');
-                document.getElementById('iotItem').classList.remove('hidden-row');
-                document.getElementById('crlTitle').textContent = 'Return to CRL & IoT';
-            }
+            document.getElementById('crlItem2').classList.toggle('hidden-row', isExplorer);
+            document.getElementById('iotItem').classList.toggle('hidden-row', isExplorer);
+            document.getElementById('crlTitle').textContent = isExplorer ? 'Return to CRL' : 'Return to CRL & IoT';
 
             buildMatrixTable(cat === 'EXPLORER' ? 'EXPLORER' : 'INNOVATOR');
             calculateTotals();
@@ -1272,8 +1402,13 @@
             let name = document.getElementById('teamName').value.trim();
             if(!name) { alert('Nama Team wajib diisi!'); return; }
             const duration = getDurationValue();
-            if(!/^([0-9]{2}):([0-5][0-9]):([0-5][0-9])$/.test(duration)) {
-                alert('Duration harus menggunakan format HH:MM:SS, contoh 01:50:30');
+            const durMs = durationToMsRaw(duration);
+            if(durMs === Infinity || durMs > 120000) {
+                alert('Waktu maksimal 02:00.000 (2 menit). Format: MENIT:DETIK.MILIDETIK');
+                return;
+            }
+            if(durMs === 0) {
+                alert('Waktu belum diisi! Isi menit, detik, dan milidetik.');
                 return;
             }
             if(!selectedFiles[1] || !selectedFiles[2]) { alert('Harap upload 2 foto bukti!'); return; }
@@ -1340,18 +1475,70 @@
             }
         }
 
+        // ===== HALAMAN JUARA =====
+        function hideAllPages() {
+            ['loginMenu'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['scoringForm','submissionPage','winnersPage'].forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById('logoutBtn').classList.add('hidden');
+        }
+
+        function showWinnersPage() {
+            hideAllPages();
+            document.getElementById('winnersPage').classList.add('active');
+            renderWinners();
+            window.scrollTo(0, 0);
+        }
+
+        function renderWinners() {
+            const root = document.getElementById('winnersContent');
+            if (!root) return;
+            const styles = ['win-gold','win-silver','win-bronze','win-hope','win-hope','win-hope'];
+            const icons  = ['🥇','🥈','🥉','🎖️','🎖️','🎖️'];
+            const cats = [['MASTER','👑'],['INNOVATOR','⚡'],['EXPLORER','🔍']];
+
+            root.innerHTML = cats.map(([cat, icon]) => {
+                const ranked = getRankedTeams(cat);
+                const cards = AWARDS.map((label, i) => {
+                    const t = ranked[i];
+                    const body = t
+                        ? `<div class="win-team">${escapeHtml(t.team)}</div>
+                           <div class="win-meta">
+                               SCORE <b>${Number(t.total) || 0}</b><br>
+                               WAKTU <b>${escapeHtml(t.duration || '-')}</b><br>
+                               ${escapeHtml(t.date || '')}
+                           </div>`
+                        : `<div class="win-empty">Belum ada</div>`;
+                    return `<div class="win-card ${styles[i]}">
+                                <div class="win-badge">${icons[i]} ${label}</div>
+                                ${body}
+                            </div>`;
+                });
+                return `<div class="win-cat">
+                    <div class="win-cat-title">${icon} ${cat}</div>
+                    <div class="win-cat-sub">${ranked.length} TIM TERDAFTAR</div>
+                    <div class="win-group-label">// JUARA</div>
+                    <div class="win-grid">${cards.slice(0,3).join('')}</div>
+                    <div class="win-group-label">// JUARA HARAPAN</div>
+                    <div class="win-grid">${cards.slice(3).join('')}</div>
+                </div>`;
+            }).join('');
+        }
+
         function showPublicMonitor() {
             document.getElementById('loginMenu').classList.add('hidden');
             document.getElementById('scoringForm').classList.remove('active');
+            document.getElementById('winnersPage').classList.remove('active');
             document.getElementById('submissionPage').classList.add('active');
             document.getElementById('logoutBtn').classList.add('hidden');
             renderMonitor('MASTER');
         }
 
         function logout() {
+            adminMode = false;
             document.getElementById('loginMenu').classList.remove('hidden');
             document.getElementById('scoringForm').classList.remove('active');
             document.getElementById('submissionPage').classList.remove('active');
+            document.getElementById('winnersPage').classList.remove('active');
             document.getElementById('logoutBtn').classList.add('hidden');
             document.getElementById('mainScoringForm').reset();
         }
@@ -1370,6 +1557,7 @@
             });
 
             const filtered = submittedTeams.filter(t => t.category === cat);
+            const awardMap = getAwardMap(cat);
             const totalTeams = filtered.length;
             const totalPoints = filtered.reduce((sum,t) => sum + (parseInt(t.total)||0), 0);
 
@@ -1388,6 +1576,14 @@
                 </div>`;
             list.appendChild(hero);
 
+            const adminBtn = document.createElement('button');
+            adminBtn.type = 'button';
+            adminBtn.className = 'view-photo-btn';
+            adminBtn.style.cssText = 'margin:0 0 12px auto;display:block;';
+            adminBtn.textContent = adminMode ? '🔓 Admin aktif (klik untuk kunci)' : '🔒 Admin';
+            adminBtn.onclick = toggleAdmin;
+            list.appendChild(adminBtn);
+
             if (!filtered.length) {
                 const empty = document.createElement('div');
                 empty.style.cssText = 'text-align:center;padding:30px;color:#6f8498;';
@@ -1397,6 +1593,7 @@
             }
 
             filtered.forEach((t, idx) => {
+                const award = awardMap.get(t.firebaseId);
                 const originalIndex = submittedTeams.indexOf(t);
                 const card = document.createElement('div');
                 card.className = 'team-card';
@@ -1417,19 +1614,23 @@
                 card.innerHTML = `
                     <div><b style="font-family:'Orbitron';color:var(--cyber-cyan);">${String(idx+1).padStart(2,'0')}</b></div>
                     <div style="flex:1;">
-                        <div style="color:#fff;font-family:'Orbitron';font-size:.9rem;">${t.team}</div>
+                        <div style="color:#fff;font-family:'Orbitron';font-size:.9rem;">
+                            ${escapeHtml(t.team)}
+                            ${award ? `<span style="margin-left:8px;padding:2px 8px;border:1px solid var(--neon-yellow);color:var(--neon-yellow);border-radius:4px;font-size:.65rem;white-space:nowrap;">🏆 ${award}</span>` : ''}
+                        </div>
                         <div style="font-size:.7rem;color:#71869b;margin-top:5px;">
                             SCORE <b style="color:var(--neon-yellow);">${t.total}</b>
                             &nbsp;•&nbsp; ${t.date}
-                            &nbsp;•&nbsp; DURATION <b style="color:#fff;">${t.duration || '-'}</b>
+                            &nbsp;•&nbsp; WAKTU <b style="color:#fff;">${t.duration || '-'}</b>
                         </div>
                         <div style="font-size:.65rem;color:#8196aa;margin-top:5px;">
-                            CRL: ${t.crl1||0} &nbsp;|&nbsp; CRL 2: ${t.crl2||0} &nbsp;|&nbsp; IoT: ${t.iot||0}
+                            CRL: ${t.crl1||0}${cat === 'EXPLORER' ? '' : ` &nbsp;|&nbsp; CRL 2: ${t.crl2||0} &nbsp;|&nbsp; IoT: ${t.iot||0}`}
                         </div>
                     </div>
                     <div style="text-align:right;">
                         ${photoHtml}
                         <div style="color:var(--neon-green);font-size:.68rem;margin-top:6px;">✓ SUBMITTED</div>
+                        ${adminMode ? `<button type="button" class="view-photo-btn" style="border-color:var(--neon-red);color:var(--neon-red);" onclick="deleteSubmission('${t.firebaseId}')">🗑 HAPUS</button>` : ''}
                     </div>`;
 
                 list.appendChild(card);
@@ -1467,9 +1668,9 @@
 
         function resetForm() {
             document.getElementById('mainScoringForm').reset();
-            document.getElementById('durationHour').value = '00';
             document.getElementById('durationMinute').value = '00';
             document.getElementById('durationSecond').value = '00';
+            document.getElementById('durationMs').value = '000';
             updateDurationPreview();
             document.querySelectorAll('.score-box').forEach(b => b.classList.remove('active'));
             crlActive = false;
