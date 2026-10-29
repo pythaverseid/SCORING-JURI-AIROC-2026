@@ -803,8 +803,8 @@
                 <div class="form-section">
                     <h2 class="section-title">Team Information</h2>
                     <div class="form-row">
-                        <div class="form-group"><label>Team Name *</label><input type="text" id="teamName" required placeholder="Enter Name"></div>
                         <div class="form-group"><label>Team ID *</label><select id="judgeID" required><option value="">-- Select ID --</option></select></div>
+                        <div class="form-group"><label>NAMA JURI*</label><input type="text" id="judgeName" required placeholder="Enter Judge Name"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Date *</label><input type="date" id="matchDate" required></div>
@@ -1094,6 +1094,11 @@
 
         setupDurationPicker();
 
+        // Label yang ditampilkan di monitor & juara = TEAM ID (fallback ke nama tim untuk data lama)
+        function teamLabel(t) {
+            return (t && (t.judgeId || t.team)) || '-';
+        }
+
         function escapeHtml(value) {
             return String(value ?? "")
                 .replace(/&/g, "&amp;")
@@ -1170,7 +1175,7 @@
         async function deleteSubmission(id) {
             if (!adminMode) return;
             const t = submittedTeams.find(x => x.firebaseId === id);
-            const name = t ? t.team : id;
+            const name = t ? teamLabel(t) : id;
             if (!confirm('Hapus data "' + name + '"?\nData di database juga akan terhapus permanen.')) return;
             try {
                 await window.firebaseRemove(
@@ -1399,8 +1404,10 @@
 
         document.getElementById('mainScoringForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            let name = document.getElementById('teamName').value.trim();
-            if(!name) { alert('Nama Team wajib diisi!'); return; }
+            const teamId = document.getElementById('judgeID').value;
+            const judgeNameVal = document.getElementById('judgeName').value.trim();
+            if(!teamId) { alert('Team ID wajib dipilih!'); return; }
+            if(!judgeNameVal) { alert('Nama Juri wajib diisi!'); return; }
             const duration = getDurationValue();
             const durMs = durationToMsRaw(duration);
             if(durMs === Infinity || durMs > 120000) {
@@ -1413,7 +1420,7 @@
             }
             if(!selectedFiles[1] || !selectedFiles[2]) { alert('Harap upload 2 foto bukti!'); return; }
 
-            document.getElementById('confirmTeamName').textContent = name;
+            document.getElementById('confirmTeamName').textContent = teamId;
             document.getElementById('confirmOverlay').classList.add('show');
 
             try {
@@ -1423,7 +1430,7 @@
                 ]);
 
                 pendingData = {
-                    team: name,
+                    team: teamId,
                     category: judgeData.category,
                     total: Number(document.getElementById('overallTotalScore').textContent) || 0,
                     date: document.getElementById('matchDate').value,
@@ -1501,7 +1508,7 @@
                 const cards = AWARDS.map((label, i) => {
                     const t = ranked[i];
                     const body = t
-                        ? `<div class="win-team">${escapeHtml(t.team)}</div>
+                        ? `<div class="win-team">${escapeHtml(teamLabel(t))}</div>
                            <div class="win-meta">
                                SCORE <b>${Number(t.total) || 0}</b><br>
                                WAKTU <b>${escapeHtml(t.duration || '-')}</b><br>
@@ -1615,13 +1622,16 @@
                     <div><b style="font-family:'Orbitron';color:var(--cyber-cyan);">${String(idx+1).padStart(2,'0')}</b></div>
                     <div style="flex:1;">
                         <div style="color:#fff;font-family:'Orbitron';font-size:.9rem;">
-                            ${escapeHtml(t.team)}
+                            ${escapeHtml(teamLabel(t))}
                             ${award ? `<span style="margin-left:8px;padding:2px 8px;border:1px solid var(--neon-yellow);color:var(--neon-yellow);border-radius:4px;font-size:.65rem;white-space:nowrap;">🏆 ${award}</span>` : ''}
                         </div>
                         <div style="font-size:.7rem;color:#71869b;margin-top:5px;">
                             SCORE <b style="color:var(--neon-yellow);">${t.total}</b>
                             &nbsp;•&nbsp; ${t.date}
                             &nbsp;•&nbsp; WAKTU <b style="color:#fff;">${t.duration || '-'}</b>
+                        </div>
+                        <div style="font-size:.7rem;color:#71869b;margin-top:5px;">
+                            JURI <b style="color:var(--neon-green);">${escapeHtml(t.judgeName || '-')}</b>
                         </div>
                         <div style="font-size:.65rem;color:#8196aa;margin-top:5px;">
                             CRL: ${t.crl1||0}${cat === 'EXPLORER' ? '' : ` &nbsp;|&nbsp; CRL 2: ${t.crl2||0} &nbsp;|&nbsp; IoT: ${t.iot||0}`}
@@ -1652,7 +1662,7 @@
         function openPhotoModal(teamIndex) {
             const t = submittedTeams[teamIndex];
             if(!t) return;
-            document.getElementById('photoModalTitle').textContent = `PHOTO EVIDENCE // ${t.team}`;
+            document.getElementById('photoModalTitle').textContent = `PHOTO EVIDENCE // ${teamLabel(t)}`;
             document.getElementById('photoModalGrid').innerHTML = (t.photos || []).map((p,i) => `
                 <div>
                     <img src="${p.src}" alt="Photo ${i+1}">
